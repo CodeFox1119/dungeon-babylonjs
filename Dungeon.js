@@ -211,7 +211,7 @@ Dungeon.prototype.showDebugMesh = function () {
 
 Dungeon.prototype.initAI = function () {
     let MAX_ENEMIES=10;
-    this.crowd = this.navPlugin.createCrowd(MAX_ENEMIES, .1, this.scene);
+    this.crowd = this.navPlugin.createCrowd(MAX_ENEMIES, 3.6, this.scene);
     this.crowd.onReachTargetObservable.add((agentInfos) => {
         console.log("agent #" + agentInfos.agentIndex + " reached destination");
     });    
@@ -228,13 +228,13 @@ const ACTORSTATE = {
 Dungeon.prototype.addToCrowdAI = function (containerToAdd) {
     var i;
     var agentParams = {
-        radius: 3.6,
+        radius: 2,
         height: 7.2,
         maxAcceleration: 1000,
         maxSpeed: 10.0,
-        collisionQueryRange: 35,
+        collisionQueryRange: 9,
         pathOptimizationRange: 0.0,
-        separationWeight: 1.0
+        separationWeight: 1
     };
         
     //newMeshes[i].position = new BABYLON.Vector3(0, 1.1, 10);
