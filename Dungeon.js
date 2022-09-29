@@ -7,8 +7,8 @@ var Dungeon = function (canvas) {
     this.movementX = 0 // mouse left/right
     this.movementY = 0 // mouse up/down
 
-    this.agentsReadyToInitialize=false;
-    this.agentsInitialized=false;
+    this.agentsReadyToInitialize = false;
+    this.agentsInitialized = false;
     this.totalAgentsSoFar = []; // list of total agents so they can be added via addToCrowdAI after the agents are loaded and ready to initialize 
     this.enemyAgents = []; // current active enemy agents
 
@@ -36,13 +36,13 @@ var Dungeon = function (canvas) {
 
     console.log(utils.isTouchEnabled() || utils.getWindowWidth() < 768);
 
-//    this.prepNavmeshCreator(); // prepare navmesh creator by loading recast wasm
+    //    this.prepNavmeshCreator(); // prepare navmesh creator by loading recast wasm
 
-//    console.log("creating camera");
+    //    console.log("creating camera");
 
     const camera = this.createCamera();
 
-    this.TAU = 2*Math.PI;
+    this.TAU = 2 * Math.PI;
     this.PI = Math.PI;
     this.PI0125 = Math.PI / 8;
     this.PI06125 = Math.PI / 16;
@@ -71,22 +71,22 @@ var Dungeon = function (canvas) {
     /* so now check if running in iframe and if so require mouse click to rotate, which also swings sword if close to an enemy */
     //    this._mouseMoveHandler = this.onMouseMove.bind(this)
     //    document.addEventListener("mousemove", this._mouseMoveHandler)
-/*
-    // android moto z play is about 6 fp/s slower with any fog    
-    // Darkness 'Fog' for indoor scenes
-    this.scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
-    //BABYLON.Scene.FOGMODE_NONE;
-    //BABYLON.Scene.FOGMODE_EXP;
-    //BABYLON.Scene.FOGMODE_EXP2;
-    //BABYLON.Scene.FOGMODE_LINEAR;
-
-    this.scene.fogColor = new BABYLON.Color3(0, 0, 0);
-    //    this.scene.fogDensity = 0.05;
-
-    //Only if LINEAR
-    this.scene.fogStart = 1.0;
-    this.scene.fogEnd = 35.0; // fogEnd depends on current character 'vision'
-*/
+    /*
+        // android moto z play is about 6 fp/s slower with any fog    
+        // Darkness 'Fog' for indoor scenes
+        this.scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
+        //BABYLON.Scene.FOGMODE_NONE;
+        //BABYLON.Scene.FOGMODE_EXP;
+        //BABYLON.Scene.FOGMODE_EXP2;
+        //BABYLON.Scene.FOGMODE_LINEAR;
+    
+        this.scene.fogColor = new BABYLON.Color3(0, 0, 0);
+        //    this.scene.fogDensity = 0.05;
+    
+        //Only if LINEAR
+        this.scene.fogStart = 1.0;
+        this.scene.fogEnd = 35.0; // fogEnd depends on current character 'vision'
+    */
     // flicker the fog (so it's as if holding a torch) -- didn't really like it
     /*    var adding=0;
         this.scene.registerBeforeRender(function () {
@@ -114,7 +114,7 @@ var Dungeon = function (canvas) {
     camera.setTarget(BABYLON.Vector3.Zero());
 
     //    _this.scene = scene;
-    _this.freeFloorTilePositions=[];
+    _this.freeFloorTilePositions = [];
 
     _this.initScene();
 
@@ -126,15 +126,15 @@ var Dungeon = function (canvas) {
         _this.engine.loadingScreen.hideLoadingUI();
         _this.importSword(_this.scene, camera);
         for (let i = 0; i < _this.actorsOnCurrentLevel.length; i++) {
-            let positionIndex = Math.floor(Math.random()*_this.freeFloorTilePositions.length);
-            console.log('positionIndex:',positionIndex)
-            let position=_this.freeFloorTilePositions[positionIndex];
-            console.log("position:",position);
+            let positionIndex = Math.floor(Math.random() * _this.freeFloorTilePositions.length);
+            console.log('positionIndex:', positionIndex)
+            let position = _this.freeFloorTilePositions[positionIndex];
+            console.log("position:", position);
             await _this.meshAndActorManager.addActor(position, _this.actorsOnCurrentLevel[i], _this.scene, _this);
             // remove it from the free tile list so another monster doesn't spawn on the same spot
             _this.freeFloorTilePositions.splice(positionIndex, 1); // 2nd parameter means remove one item only
         }
-//        _this.importMesh(_this.scene, _this); // import all monster types/items/doors etc in the background (so likely use gltf)
+        //        _this.importMesh(_this.scene, _this); // import all monster types/items/doors etc in the background (so likely use gltf)
         _this.createNavmesh();
         _this.engine.runRenderLoop(function () {
             _this.update(_this);
@@ -161,20 +161,20 @@ Dungeon.prototype.createNavmesh = function () {
         maxVertsPerPoly: 6,
         detailSampleDist: 6,
         detailSampleMaxError: 15,
-                        // doesn't seem to work with or without obstacles --\/
+        // doesn't seem to work with or without obstacles --\/
         borderSize: 1, // for obstacles as per https://doc.babylonjs.com/extensions/crowdNavigation/obstacles
-        tileSize:20 
-        };
+        tileSize: 20
+    };
 
-/*    console.log("mesh array");
-    console.log(this.meshesForNavMeshCalc); */
+    /*    console.log("mesh array");
+        console.log(this.meshesForNavMeshCalc); */
     if (!this.navPlugin) {
         this.prepNavmeshCreator().then((navMeshPlugin) => {
             if (navMeshPlugin) {
-                let startTime=Date.now();
+                let startTime = Date.now();
                 this.navPlugin.createNavMesh(this.meshesForNavMeshCalc, navmeshParameters);
-                let endTime=Date.now();
-                console.log("Time to produce navmesh:" + (endTime-startTime)+"ms");
+                let endTime = Date.now();
+                console.log("Time to produce navmesh:" + (endTime - startTime) + "ms");
                 this.showDebugMesh();
                 this.initAI();
             }
@@ -195,7 +195,7 @@ Dungeon.prototype.prepNavmeshCreator = async function () {
         this.navPlugin = new BABYLON.RecastJSPlugin();
         console.log('nav plugin loaded');
         return this.navPlugin;
-//    console.log(this.navPlugin);
+        //    console.log(this.navPlugin);
     }
 }
 
@@ -210,12 +210,12 @@ Dungeon.prototype.showDebugMesh = function () {
 }
 
 Dungeon.prototype.initAI = function () {
-    let MAX_ENEMIES=10;
+    let MAX_ENEMIES = 10;
     this.crowd = this.navPlugin.createCrowd(MAX_ENEMIES, 3.6, this.scene);
     this.crowd.onReachTargetObservable.add((agentInfos) => {
         console.log("agent #" + agentInfos.agentIndex + " reached destination");
-    });    
-    
+    });
+
 }
 
 const ACTORSTATE = {
@@ -223,7 +223,7 @@ const ACTORSTATE = {
     RUNNING: 'RUNNING',
     WALKING: 'WALKING',
     ATTACKING: 'ATTACKING'
-  };
+};
 
 Dungeon.prototype.addToCrowdAI = function (containerToAdd) {
     var i;
@@ -236,25 +236,27 @@ Dungeon.prototype.addToCrowdAI = function (containerToAdd) {
         pathOptimizationRange: 0.0,
         separationWeight: 1
     };
-        
+
     //newMeshes[i].position = new BABYLON.Vector3(0, 1.1, 10);
-//    var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(3.0, 0, 10.0));
+    //    var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(3.0, 0, 10.0));
     var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(
         containerToAdd.rootNodes[0].position.x, 0, containerToAdd.rootNodes[0].position.z));
-//    var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(0, 0, 0));
-/*    var transform = new BABYLON.TransformNode();
-    meshToAdd.parent = transform;
-    var agentIndex = this.crowd.addAgent(positionToUse, agentParams, transform);
-    this.enemyAgents.push({idx:agentIndex, trf:transform, mesh:meshToAdd, target:null}); */
+    //    var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(0, 0, 0));
+    /*    var transform = new BABYLON.TransformNode();
+        meshToAdd.parent = transform;
+        var agentIndex = this.crowd.addAgent(positionToUse, agentParams, transform);
+        this.enemyAgents.push({idx:agentIndex, trf:transform, mesh:meshToAdd, target:null}); */
 
     // just use mesh itself as transform node (otherwise the position is offset, and setting the transform node to the same positoin as the parent mesh doesn't seem to help)
     var agentIndex = this.crowd.addAgent(positionToUse, agentParams, containerToAdd.rootNodes[0]);
-    this.enemyAgents.push({idx:agentIndex, state: ACTORSTATE.IDLE, trf:containerToAdd.rootNodes[0], mesh:containerToAdd.rootNodes[0], 
-                                           animGrps: containerToAdd.animationGroups, target:null});
+    this.enemyAgents.push({
+        idx: agentIndex, state: ACTORSTATE.IDLE, trf: containerToAdd.rootNodes[0], mesh: containerToAdd.rootNodes[0],
+        animGrps: containerToAdd.animationGroups, target: null
+    });
 
     // default AI (should wander first, then approach player when within certain distance)
-//    let camera = this.scene.activeCamera
-//    this.crowd.agentGoto(agentIndex, this.navPlugin.getClosestPoint(camera.position));
+    //    let camera = this.scene.activeCamera
+    //    this.crowd.agentGoto(agentIndex, this.navPlugin.getClosestPoint(camera.position));
 
 }
 
@@ -316,17 +318,16 @@ Dungeon.prototype.update = function (_this) {
 
         // default AI (should wander first, then approach player when within certain distance)
         let camera = _this.scene.activeCamera
-    //    this.crowd.agentGoto(agentIndex, this.navPlugin.getClosestPoint(camera.position));
+        //    this.crowd.agentGoto(agentIndex, this.navPlugin.getClosestPoint(camera.position));
         var agents = _this.crowd.getAgents();
         var i;
-        for (i=0;i<agents.length;i++) {
+        for (i = 0; i < agents.length; i++) {
             // if wandering, target random
             // if seeking, target player camera
             let target = _this.navPlugin.getClosestPoint(new BABYLON.Vector3(camera.position.x, 0, camera.position.z));
 
             let ag;
-            for(let j = 0;j<_this.enemyAgents.length;j++)
-            {
+            for (let j = 0; j < _this.enemyAgents.length; j++) {
                 if (_this.enemyAgents[i].idx == i) { // found our agent?
                     ag = _this.enemyAgents[i];
                     break;
@@ -335,24 +336,69 @@ Dungeon.prototype.update = function (_this) {
             if (ag) {
                 var a = camera.position.x - ag.mesh.position.x;
                 var b = camera.position.z - ag.mesh.position.z;
-                var distance = Math.sqrt( a*a + b*b );
-                if (distance < 12 && distance > 8) { // enemy has arrived at player, so no need to continue approaching
+                var distance = Math.sqrt(a * a + b * b);
+                let vel = _this.crowd.getAgentVelocity(i);
+
+                
+                if (distance < 18 && distance > 12 && vel.length() >4) {
+                    
+                    let theta = Math.atan2(camera.position.x - ag.mesh.position.x, camera.position.z - ag.mesh.position.z);
+                    theta = theta < 0 ? theta + _this.TAU : theta;
+                    let diff = ag.mesh.rotation.y - theta;
+                    diff = diff < -_this.PI ? diff + _this.TAU : diff;
+
+                    if (Math.abs(diff) > 0.02) {
+                        ag.mesh.rotation.y -= 0.04 * Math.sign(diff);
+
+                        if (ag.mesh.rotation.y > _this.PI) {
+                            ag.mesh.rotation.y -= _this.TAU;
+                        }
+                        else if (ag.mesh.rotation.y < -_this.PI) {
+                            ag.mesh.rotation.y += _this.TAU;
+                        }
+                    }
+                    // enemy has arrived at player, so no need to continue approaching
                     if (ag.state != ACTORSTATE.WALKING) {
-                        ag.state= ACTORSTATE.WALKING;
+                        ag.state = ACTORSTATE.WALKING;
                         _this.stopAnimations(ag.animGrps)
                         ag.animGrps[3].start(); // walk
                         ag.animGrps[3].loopAnimation = true;
                     }
                 }
-                else if (distance < 8) { // enemy has arrived at player, so no need to continue approaching
+                else if (distance > 18) { // approach, and keep rotated toward the player
+                    ag.reachedDestination = false;
+
+                    _this.crowd.agentGoto(agents[i], target);
+                    //            console.log("attempting to follow camera " + camera.position + ";" + _this.navPlugin.getClosestPoint(new BABYLON.Vector3(camera.position.x, 0, camera.position.z)));
+
+
+
+                    if (vel.length() > 0.2 && distance > 24) {
+                        if (ag.state != ACTORSTATE.RUNNING) {
+
+                            ag.state = ACTORSTATE.RUNNING;
+                            _this.stopAnimations(ag.animGrps)
+                            ag.animGrps[2].start(); // run
+                            ag.animGrps[2].loopAnimation = true;
+                        }
+
+                        vel.normalize();
+                        var desiredRotation = Math.atan2(vel.x, vel.z);
+                        ag.mesh.rotation.y = ag.mesh.rotation.y + (desiredRotation - ag.mesh.rotation.y) * 0.05;
+                    }
+
+
+
+                } else if (distance < 8) {
+                    // enemy has arrived at player, so no need to continue approaching
                     // can start the attack state machine intead (should be inside Enemy.js)
                     if (!ag.reachedDestination) {
                         let currentPosition = _this.navPlugin.getClosestPoint(new BABYLON.Vector3(ag.mesh.position.x, 0, ag.mesh.position.z));
                         // use teleport to reset agent position so it doesn't keep trying to move once it arrives
                         _this.crowd.agentTeleport(agents[i], currentPosition); // maintain current position
-                        ag.reachedDestination=true;
+                        ag.reachedDestination = true;
                         if (ag.state != ACTORSTATE.ATTACKING) {
-                            ag.state= ACTORSTATE.ATTACKING;
+                            ag.state = ACTORSTATE.ATTACKING;
                             _this.stopAnimations(ag.animGrps)
                             ag.animGrps[0].start(); // attack
                             ag.animGrps[0].loopAnimation = true;
@@ -364,60 +410,27 @@ Dungeon.prototype.update = function (_this) {
                     theta = theta < 0 ? theta + _this.TAU : theta;
                     let diff = ag.mesh.rotation.y - theta;
                     diff = diff < -_this.PI ? diff + _this.TAU : diff;
-                  
+
                     if (Math.abs(diff) > 0.02) {
                         ag.mesh.rotation.y -= 0.04 * Math.sign(diff);
-                  
-                      if (ag.mesh.rotation.y > _this.PI) {
-                        ag.mesh.rotation.y -= _this.TAU;
-                      }
-                      else if (ag.mesh.rotation.y < -_this.PI) {
-                        ag.mesh.rotation.y += _this.TAU;
-                      }
+
+                        if (ag.mesh.rotation.y > _this.PI) {
+                            ag.mesh.rotation.y -= _this.TAU;
+                        }
+                        else if (ag.mesh.rotation.y < -_this.PI) {
+                            ag.mesh.rotation.y += _this.TAU;
+                        }
                     }
 
                 }
-                else { // approach, and keep rotated toward the player
-                    ag.reachedDestination=false;
-                    _this.crowd.agentGoto(agents[i], target);
-                    //            console.log("attempting to follow camera " + camera.position + ";" + _this.navPlugin.getClosestPoint(new BABYLON.Vector3(camera.position.x, 0, camera.position.z)));
-                    
-                    let vel = _this.crowd.getAgentVelocity(ag.idx);
-                    if (vel.length() > 0.2)
-                    {
-                        if (ag.state != ACTORSTATE.RUNNING) {
-                            ag.state= ACTORSTATE.RUNNING;
-                            _this.stopAnimations(ag.animGrps)
-                            ag.animGrps[2].start(); // run
-                            ag.animGrps[2].loopAnimation = true;
-                        }
+                else {
+                    if (ag.state != ACTORSTATE.IDLE) {
+                        ag.state = ACTORSTATE.IDLE;
+                        _this.stopAnimations(ag.animGrps)
+                        ag.animGrps[1].start(); // idle
+                        ag.animGrps[1].loopAnimation = true;
+                    }
 
-                        vel.normalize();
-                        var desiredRotation = Math.atan2(vel.x, vel.z);
-                        ag.mesh.rotation.y = ag.mesh.rotation.y + (desiredRotation - ag.mesh.rotation.y) * 0.05;
-                    }
-                    else if (vel.length() > 0 & vel.length() < 0.2)
-                    {
-                        if (ag.state != ACTORSTATE.WALKING) {
-                            ag.state= ACTORSTATE.WALKING;
-                            _this.stopAnimations(ag.animGrps)
-                            ag.animGrps[3].start(); // walk
-                            ag.animGrps[3].loopAnimation = true;
-                        }
-
-                        vel.normalize();
-                        var desiredRotation = Math.atan2(vel.x, vel.z);
-                        ag.mesh.rotation.y = ag.mesh.rotation.y + (desiredRotation - ag.mesh.rotation.y) * 0.05;
-                    }
-                    else if (vel.length() == 0) {
-                        if (ag.state != ACTORSTATE.IDLE) {
-                            ag.state= ACTORSTATE.IDLE;
-                            _this.stopAnimations(ag.animGrps)
-                            ag.animGrps[1].start(); // idle
-                            ag.animGrps[1].loopAnimation = true;
-                        }
-                   
-                    }
                 }
             }
 
@@ -483,7 +496,7 @@ Dungeon.prototype.initScene = function () {
         camera.checkCollisions = true;
         camera.attachControl(canvas, true); 
     */
-//    this.initPlayAreaBounds(this.scene);
+    //    this.initPlayAreaBounds(this.scene);
 
     this.initSkybox(this.scene);
 
@@ -569,7 +582,7 @@ Dungeon.prototype.generateWallsAndFloor = function (scene) {
         wall.scaling = new BABYLON.Vector3(1 * scaleMultiplier, 1 * scaleMultiplier, 1 * scaleMultiplier);
         wall.material = wallMaterial;
         wall.isPickable = false;
-//        wall.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY; // supposed to be faster -- for mobile
+        //        wall.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY; // supposed to be faster -- for mobile
 
         const floor = BABYLON.MeshBuilder.CreatePlane("floor", { sideOrientation: BABYLON.Mesh.DOUBLESIDE });
         floor.material = floorMaterial;
@@ -587,16 +600,16 @@ Dungeon.prototype.generateWallsAndFloor = function (scene) {
         column.isPickable = false;
         column.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY; // supposed to be faster -- for mobile
 
-/*
-        const cube = BABYLON.MeshBuilder.CreateBox("cube", { width: 1 * scaleMultiplier, height: 1 * scaleMultiplier, depth: 1 * scaleMultiplier });
-        cube.material = columnMaterial;
-        cube.position = new BABYLON.Vector3(8, scaleMultiplier / 2, 4.8);
-        cube.checkCollisions = true;
-        cube.isPickable = false;
-        cube.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY; // supposed to be faster -- for mobile
-
-        this.totalAgentsSoFar.push(cube);
-*/
+        /*
+                const cube = BABYLON.MeshBuilder.CreateBox("cube", { width: 1 * scaleMultiplier, height: 1 * scaleMultiplier, depth: 1 * scaleMultiplier });
+                cube.material = columnMaterial;
+                cube.position = new BABYLON.Vector3(8, scaleMultiplier / 2, 4.8);
+                cube.checkCollisions = true;
+                cube.isPickable = false;
+                cube.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY; // supposed to be faster -- for mobile
+        
+                this.totalAgentsSoFar.push(cube);
+        */
 
         /*
             //Polygon shape in XZ plane
@@ -632,7 +645,7 @@ Dungeon.prototype.generateWallsAndFloor = function (scene) {
 
         console.log("e");
 
-        let meshArray=[column];
+        let meshArray = [column];
 
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 10; j++) {
@@ -643,7 +656,7 @@ Dungeon.prototype.generateWallsAndFloor = function (scene) {
                 instancePlane.isPickable = false;
                 instancePlane.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY; // supposed to be faster -- for mobile
                 meshArray.push(instancePlane);
-                this.freeFloorTilePositions.push({x:Math.floor(i*scaleMultiplier),z:Math.floor(j*scaleMultiplier)});
+                this.freeFloorTilePositions.push({ x: Math.floor(i * scaleMultiplier), z: Math.floor(j * scaleMultiplier) });
             }
         }
         for (let i = 0; i < 10; i++) {
@@ -706,9 +719,9 @@ Dungeon.prototype.generateWallsAndFloor = function (scene) {
 
         }
 
-//        console.log(meshArray);
+        //        console.log(meshArray);
         this.meshesForNavMeshCalc = meshArray; //BABYLON.Mesh.MergeMeshes(meshArray);
-//        console.log(this.meshForNavMeshCalc);
+        //        console.log(this.meshForNavMeshCalc);
 
         wall.isVisible = false; // hide original meshes
         floor.isVisible = false;
@@ -1304,19 +1317,19 @@ Dungeon.prototype.initFx = function (camera) {
 
         // have to move this elsewhere since activates only when click (hopefully can have two
         // registerBeforeRender methods)
-/*        if (_sword && swordSwingInProgress) {
-            console.log("here");
-            if (!swordSwingUp && !swordSwingDown && !swordSwingReturnToStartPosition) {
-                swordStartRot = _sword.rotation;
-                swordSwingUp = true;
-            }
-            if (swordSwingUp) {
-                _sword.rotation.x+=Math.PI*delta/1000;
-                _sword.rotation.y+=Math.PI*delta/500;
-            }
-        }
-*/
-            // console.log('walking:',walking)
+        /*        if (_sword && swordSwingInProgress) {
+                    console.log("here");
+                    if (!swordSwingUp && !swordSwingDown && !swordSwingReturnToStartPosition) {
+                        swordStartRot = _sword.rotation;
+                        swordSwingUp = true;
+                    }
+                    if (swordSwingUp) {
+                        _sword.rotation.x+=Math.PI*delta/1000;
+                        _sword.rotation.y+=Math.PI*delta/500;
+                    }
+                }
+        */
+        // console.log('walking:',walking)
         if (walking) {
             // If no sound is playing
             if (!step1.isPlaying && !step2.isPlaying && !step3.isPlaying) {
