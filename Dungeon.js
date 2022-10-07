@@ -1,26 +1,21 @@
 import utils from './Utils.js'
 import { MeshAndActorManager } from './MeshAndActorManager.js'
 
-var Dungeon = function (canvas) {
-    //    this.time = new YUKA.Time();
-
+let Dungeon = function (canvas) {
+    this.enableswing = true;
     this.movementX = 0 // mouse left/right
     this.movementY = 0 // mouse up/down
-
     this.agentsReadyToInitialize = false;
     this.agentsInitialized = false;
     this.totalAgentsSoFar = []; // list of total agents so they can be added via addToCrowdAI after the agents are loaded and ready to initialize 
     this.enemyAgents = []; // current active enemy agents
-
     this.lastPointerUnlockTS = 0;
 
     this.engine = new BABYLON.Engine(canvas, true);
-
-    //    BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = this.initLoadingScreen();
     this.engine.loadingScreen = this.initLoadingScreen();
 
     // Resize window event
-    var _this = this;
+    let _this = this;
     window.addEventListener("resize", function () {
         _this.engine.resize();
     });
@@ -28,25 +23,21 @@ var Dungeon = function (canvas) {
     this.scene = new BABYLON.Scene(this.engine);
     console.log(BABYLON.ScenePerformancePriority);
     // doesn't seem to be available in 5.22
-    //    this.scene.performancePriority = BABYLON.ScenePerformancePriority.Aggressive; // try to optimize for mobile
+    // this.scene.performancePriority = BABYLON.ScenePerformancePriority.Aggressive; // try to optimize for mobile
     this.scene.skipPointerMovePicking = true; //  so do the optimizations manually
     this.scene.autoClear = false; // Color buffer
     this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
     this.scene.skipFrustumClipping = true;
+    // console.log(utils.isTouchEnabled() || utils.getWindowWidth() < 768);
+    // this.prepNavmeshCreator(); // prepare navmesh creator by loading recast wasm
 
-    console.log(utils.isTouchEnabled() || utils.getWindowWidth() < 768);
-
-    //    this.prepNavmeshCreator(); // prepare navmesh creator by loading recast wasm
-
-    //    console.log("creating camera");
-
-    const camera = this.createCamera();
-
+    
     this.TAU = 2 * Math.PI;
     this.PI = Math.PI;
     this.PI0125 = Math.PI / 8;
     this.PI06125 = Math.PI / 16;
-
+    
+    const camera = this.createCamera();
     // limit camera rotation in up/down directions
     camera.onAfterCheckInputsObservable.add(() => {
         if (utils.isTouchEnabled()) {
@@ -61,75 +52,23 @@ var Dungeon = function (canvas) {
             }
         }
     });
-    /*	camera.onCollide = function (colMesh) {
-            console.log(colMesh.id);
-    //		if (colMesh.uniqueId === box.uniqueId) {		} 
-        }   */
-
-
-    /* won't really work right unless get pointer lock (since mouse will go to edge of screen and then lose focus and no longer effect the camera rotation)
-    /* so now check if running in iframe and if so require mouse click to rotate, which also swings sword if close to an enemy */
-    //    this._mouseMoveHandler = this.onMouseMove.bind(this)
-    //    document.addEventListener("mousemove", this._mouseMoveHandler)
-    /*
-        // android moto z play is about 6 fp/s slower with any fog    
-        // Darkness 'Fog' for indoor scenes
-        this.scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
-        //BABYLON.Scene.FOGMODE_NONE;
-        //BABYLON.Scene.FOGMODE_EXP;
-        //BABYLON.Scene.FOGMODE_EXP2;
-        //BABYLON.Scene.FOGMODE_LINEAR;
-    
-        this.scene.fogColor = new BABYLON.Color3(0, 0, 0);
-        //    this.scene.fogDensity = 0.05;
-    
-        //Only if LINEAR
-        this.scene.fogStart = 1.0;
-        this.scene.fogEnd = 35.0; // fogEnd depends on current character 'vision'
-    */
-    // flicker the fog (so it's as if holding a torch) -- didn't really like it
-    /*    var adding=0;
-        this.scene.registerBeforeRender(function () {
-            if (adding==0) {
-                this.scene.fogDensity = this.scene.fogDensity + Math.random()*0.015;
-                adding++;
-            }
-            else if (adding==1) {
-                this.scene.fogDensity = this.scene.fogDensity - Math.random()*0.015;
-                adding++;
-            }
-            else if (adding>1) {
-                this.scene.fogDensity = 0.05;
-                adding+=Math.random();
-            }
-            if (adding>10) {
-                adding=0;
-            }
-    
-        }.bind(this));
-    */
-
 
     // Targets the camera to a particular position. In this case the scene origin
     camera.setTarget(BABYLON.Vector3.Zero());
-
-    //    _this.scene = scene;
     _this.freeFloorTilePositions = [];
 
     _this.initScene();
 
     _this.meshAndActorManager = new MeshAndActorManager();
     _this.meshAndActorManager.initNewLevel();
-    _this.actorsOnCurrentLevel = ["deathknight","deathknight","deathknight"]
+    _this.actorsOnCurrentLevel = ["deathknight", "deathknight", "deathknight"]
 
     this.scene.executeWhenReady(async function () {
         _this.engine.loadingScreen.hideLoadingUI();
         _this.importSword(_this.scene, camera);
         for (let i = 0; i < _this.actorsOnCurrentLevel.length; i++) {
             let positionIndex = Math.floor(Math.random() * _this.freeFloorTilePositions.length);
-            console.log('positionIndex:', positionIndex)
             let position = _this.freeFloorTilePositions[positionIndex];
-            console.log("position:", position);
             await _this.meshAndActorManager.addActor(position, _this.actorsOnCurrentLevel[i], _this.scene, _this);
             // remove it from the free tile list so another monster doesn't spawn on the same spot
             _this.freeFloorTilePositions.splice(positionIndex, 1); // 2nd parameter means remove one item only
@@ -140,14 +79,11 @@ var Dungeon = function (canvas) {
             _this.update(_this);
         });
     });
-
-
     return;
-
 };
 
 Dungeon.prototype.createNavmesh = function () {
-    var navmeshParameters = {
+    let navmeshParameters = {
         cs: .5,
         ch: .2,
         walkableSlopeAngle: 0,
@@ -200,10 +136,10 @@ Dungeon.prototype.prepNavmeshCreator = async function () {
 }
 
 Dungeon.prototype.showDebugMesh = function () {
-    var navmeshdebug = this.navPlugin.createDebugNavMesh(this.scene);
+    let navmeshdebug = this.navPlugin.createDebugNavMesh(this.scene);
     navmeshdebug.position = new BABYLON.Vector3(0, 0.01, 0);
 
-    var matdebug = new BABYLON.StandardMaterial('matdebug', this.scene);
+    let matdebug = new BABYLON.StandardMaterial('matdebug', this.scene);
     matdebug.diffuseColor = new BABYLON.Color3(0.1, 0.2, 1);
     matdebug.alpha = 0.2;
     navmeshdebug.material = matdebug;
@@ -226,8 +162,8 @@ const ACTORSTATE = {
 };
 
 Dungeon.prototype.addToCrowdAI = function (containerToAdd) {
-    var i;
-    var agentParams = {
+    let i;
+    let agentParams = {
         radius: 2,
         height: 7.2,
         maxAcceleration: 1000,
@@ -238,17 +174,17 @@ Dungeon.prototype.addToCrowdAI = function (containerToAdd) {
     };
 
     //newMeshes[i].position = new BABYLON.Vector3(0, 1.1, 10);
-    //    var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(3.0, 0, 10.0));
-    var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(
+    //    let positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(3.0, 0, 10.0));
+    let positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(
         containerToAdd.rootNodes[0].position.x, 0, containerToAdd.rootNodes[0].position.z));
-    //    var positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(0, 0, 0));
-    /*    var transform = new BABYLON.TransformNode();
+    //    let positionToUse = this.navPlugin.getClosestPoint(new BABYLON.Vector3(0, 0, 0));
+    /*    let transform = new BABYLON.TransformNode();
         meshToAdd.parent = transform;
-        var agentIndex = this.crowd.addAgent(positionToUse, agentParams, transform);
+        let agentIndex = this.crowd.addAgent(positionToUse, agentParams, transform);
         this.enemyAgents.push({idx:agentIndex, trf:transform, mesh:meshToAdd, target:null}); */
 
     // just use mesh itself as transform node (otherwise the position is offset, and setting the transform node to the same positoin as the parent mesh doesn't seem to help)
-    var agentIndex = this.crowd.addAgent(positionToUse, agentParams, containerToAdd.rootNodes[0]);
+    let agentIndex = this.crowd.addAgent(positionToUse, agentParams, containerToAdd.rootNodes[0]);
     this.enemyAgents.push({
         idx: agentIndex, state: ACTORSTATE.IDLE, trf: containerToAdd.rootNodes[0], mesh: containerToAdd.rootNodes[0],
         animGrps: containerToAdd.animationGroups, target: null
@@ -290,7 +226,7 @@ Dungeon.prototype.createCamera = function () {
 
 /* won't really work right unless get pointer lock (since mouse will go to edge of screen and then lose focus and no longer effect the camera rotation)
 Dungeon.prototype.onMouseMove = function (event) {
-    var camera = this.scene.activeCamera;
+    let camera = this.scene.activeCamera;
 
     this.movementX = event.movementX * 0.001;
     this.movementY = event.movementY * 0.001;
@@ -319,8 +255,8 @@ Dungeon.prototype.update = function (_this) {
         // default AI (should wander first, then approach player when within certain distance)
         let camera = _this.scene.activeCamera
         //    this.crowd.agentGoto(agentIndex, this.navPlugin.getClosestPoint(camera.position));
-        var agents = _this.crowd.getAgents();
-        var i;
+        let agents = _this.crowd.getAgents();
+        let i;
         for (i = 0; i < agents.length; i++) {
             // if wandering, target random
             // if seeking, target player camera
@@ -334,14 +270,18 @@ Dungeon.prototype.update = function (_this) {
                 }
             }
             if (ag) {
-                var a = camera.position.x - ag.mesh.position.x;
-                var b = camera.position.z - ag.mesh.position.z;
-                var distance = Math.sqrt(a * a + b * b);
+                let a = camera.position.x - ag.mesh.position.x;
+                let b = camera.position.z - ag.mesh.position.z;
+                let distance = Math.sqrt(a * a + b * b);
                 let vel = _this.crowd.getAgentVelocity(i);
+                this.armyHealthBar1.position = new BABYLON.Vector3(_this.enemyAgents[0].mesh.position.x, _this.enemyAgents[0].mesh.position.y + 5, _this.enemyAgents[0].mesh.position.z)
+                this.armyHealthBar2.position = new BABYLON.Vector3(_this.enemyAgents[1].mesh.position.x, _this.enemyAgents[1].mesh.position.y + 5, _this.enemyAgents[1].mesh.position.z)
+                this.armyHealthBar3.position = new BABYLON.Vector3(_this.enemyAgents[2].mesh.position.x, _this.enemyAgents[2].mesh.position.y + 5, _this.enemyAgents[2].mesh.position.z)
+                this.armyHealthBar1.rotation = camera.rotation;
+                this.armyHealthBar2.rotation = camera.rotation;
+                this.armyHealthBar3.rotation = camera.rotation;
+                if (distance < 18 && distance > 12 && vel.length() > 4) {
 
-                
-                if (distance < 18 && distance > 12 && vel.length() >4) {
-                    
                     let theta = Math.atan2(camera.position.x - ag.mesh.position.x, camera.position.z - ag.mesh.position.z);
                     theta = theta < 0 ? theta + _this.TAU : theta;
                     let diff = ag.mesh.rotation.y - theta;
@@ -383,7 +323,7 @@ Dungeon.prototype.update = function (_this) {
                         }
 
                         vel.normalize();
-                        var desiredRotation = Math.atan2(vel.x, vel.z);
+                        let desiredRotation = Math.atan2(vel.x, vel.z);
                         ag.mesh.rotation.y = ag.mesh.rotation.y + (desiredRotation - ag.mesh.rotation.y) * 0.05;
                     }
 
@@ -443,6 +383,14 @@ Dungeon.prototype.update = function (_this) {
     if (_this.fpsText) {
         _this.fpsText.text = "Meshes: " + _this.scene.meshes.length + "; " + _this.engine.getFps().toFixed() + " fps";
     }
+    if (this.enableswing) {
+        if (this.sword.position._x > -3) {
+            this.sword.movePOV(.5, 0, 0)
+        } else {
+            this.enableswing = false;
+            this.sword.position = new BABYLON.Vector3(4, -2.5, 5);
+        }
+    }
 }
 
 Dungeon.prototype.stopAnimations = function (animGrps) {
@@ -452,40 +400,45 @@ Dungeon.prototype.stopAnimations = function (animGrps) {
 }
 
 
-Dungeon.prototype.importSword = async function (scene, camera) {
-    //    await sleep(2000);
-
+Dungeon.prototype.importSword = function (scene, camera) {
     // set up our transform node so we can attach the sword to the camera
-    var transformNode = new BABYLON.TransformNode();
+    let transformNode = new BABYLON.TransformNode();
     transformNode.parent = camera;
     camera.fov = 1;
     //    transformNode.position = new BABYLON.Vector3(0.5, -0.7, 0.5);
     //    transformNode.rotation.x = -0.01;
 
     BABYLON.SceneLoader.ImportMeshAsync("", "assets/", "longsword.glb", scene,).then(results => {
-
-        var root = results.meshes[0];
+        let root = results.meshes[0];
         root.name = '__sword__';
         root.id = '__sword__';
-        root.position = new BABYLON.Vector3(.5, -1, 0);
-        root.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(25), BABYLON.Tools.ToRadians(180), 0);
-        root.scaling.scaleInPlace(.5);
-        //        console.log("cameras:" + camera);
+        root.position = new BABYLON.Vector3(3, -2.5, 5);
+        root.rotation = new BABYLON.Vector3(1, 1, 1);
+        root.scaling.scaleInPlace(.8);
         root.isPickable = false;
         root.parent = transformNode;
-
         this.sword = root;
     });
+    BABYLON.NodeMaterial.ParseFromSnippetAsync("8HENV8#7", this.scene).then((mat) => {
+        this.armyHealthBar1 = BABYLON.MeshBuilder.CreatePlane("armyHealthBar1", { width: 1.5, height: 0.1, sideOrientation: BABYLON.Mesh.DOUBLESIDE });
+        this.armyHealthBar1.material = mat.clone("pm");
+        this.armyHealthBar1.material.getBlockByName("fillRate").value = 10;
+        this.armyHealthBar1.position = new BABYLON.Vector3(1, 1, 1);
+        this.armyHealthBar2 = this.armyHealthBar1.clone("armyHeathBar2");
+        this.armyHealthBar2.position = new BABYLON.Vector3(1, 1, 1);
+        this.armyHealthBar3 = this.armyHealthBar1.clone("armyHeathBar3");
+        this.armyHealthBar3.position = new BABYLON.Vector3(1, 1, 1);
+    })
 }
 
-var isLocked = false;
+let isLocked = false;
 Dungeon.prototype.initScene = function () {
 
     // Camera attached to the canvas
-    var camera = this.scene.activeCamera;
+    let camera = this.scene.activeCamera;
 
     //camera.setTarget(new BABYLON.Vector3(0,0,0));
-    var canvas = this.engine.getRenderingCanvas();
+    let canvas = this.engine.getRenderingCanvas();
     camera.attachControl(this.engine.getRenderingCanvas());
 
     // jump wasn't working, so uncommented the next four lines, then it worked, and when commented out
@@ -592,6 +545,8 @@ Dungeon.prototype.generateWallsAndFloor = function (scene) {
         floor.position = new BABYLON.Vector3(0, 0, 0); // Starting all from
         floor.isPickable = false;
         floor.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY; // supposed to be faster -- for mobile
+
+
 
         const column = BABYLON.MeshBuilder.CreateCylinder("column", { diameter: 2.5, height: 1 * scaleMultiplier });
         column.material = columnMaterial;
@@ -736,8 +691,8 @@ Dungeon.prototype.generateWallsAndFloor = function (scene) {
 Dungeon.prototype.initFpsOverlay = function () {
 
     // UI
-    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-    /*        var UiPanel = new BABYLON.GUI.StackPanel();
+    let advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    /*        let UiPanel = new BABYLON.GUI.StackPanel();
             UiPanel.width = "220px";
             UiPanel.fontSize = "14px";
             UiPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
@@ -787,13 +742,13 @@ Dungeon.prototype.initLoadingScreen = function () {
     //set the predefined text
     this._loadingTextDiv.innerHTML = "Dungeon Spawning";
     // Generating keyframes
-    var style = document.createElement('style');
+    let style = document.createElement('style');
     style.type = 'text/css';
-    var keyFrames = "@-webkit-keyframes spin1 { 0% { -webkit-transform: rotate(0deg);}\n                    100% { -webkit-transform: rotate(360deg);}\n                }                @keyframes spin1 {                    0% { transform: rotate(0deg);}\n                    100% { transform: rotate(360deg);}\n                }";
+    let keyFrames = "@-webkit-keyframes spin1 { 0% { -webkit-transform: rotate(0deg);}\n                    100% { -webkit-transform: rotate(360deg);}\n                }                @keyframes spin1 {                    0% { transform: rotate(0deg);}\n                    100% { transform: rotate(360deg);}\n                }";
     style.innerHTML = keyFrames;
     document.getElementsByTagName('head')[0].appendChild(style);
     // Loading img
-    var imgBack = new Image();
+    let imgBack = new Image();
     imgBack.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Swirl.png/480px-Swirl.png";
     imgBack.style.position = "absolute";
     imgBack.style.left = "25%";
@@ -813,12 +768,12 @@ Dungeon.prototype.initLoadingScreen = function () {
         console.log("customLoadingScreen creation")
     }
     customLoadingScreen.prototype.displayLoadingUI = function () {
-        var loadingScreenDiv = window.document.getElementById("loadingScreen");
+        let loadingScreenDiv = window.document.getElementById("loadingScreen");
         //        console.log("customLoadingScreen loading")
         //        loadingScreenDiv.innerHTML = "loading";
     };
     customLoadingScreen.prototype.hideLoadingUI = function () {
-        var loadingScreenDiv = window.document.getElementById("loadingScreen");
+        let loadingScreenDiv = window.document.getElementById("loadingScreen");
         //        console.log("customLoadingScreen loaded")
         loadingScreenDiv.style.display = "none";
     };
@@ -827,30 +782,30 @@ Dungeon.prototype.initLoadingScreen = function () {
 }
 
 Dungeon.prototype.initPlayAreaBounds = function (scene) {
-    //    var myGround = BABYLON.MeshBuilder.CreateGround("myGround", {width: 200, height: 200, subdivsions: 4}, scene);
+    //    let myGround = BABYLON.MeshBuilder.CreateGround("myGround", {width: 200, height: 200, subdivsions: 4}, scene);
     //    myGround.receiveShadows = true;
 
     //Bounding box Geometry = prevent player from going outside of ground area
 
-    var border0 = BABYLON.Mesh.CreateBox("border0", 1, scene);
+    let border0 = BABYLON.Mesh.CreateBox("border0", 1, scene);
     border0.scaling = new BABYLON.Vector3(1, 100, 200);
     border0.position.x = -100.0;
     border0.checkCollisions = true;
     border0.isVisible = false;
 
-    var border1 = BABYLON.Mesh.CreateBox("border1", 1, scene);
+    let border1 = BABYLON.Mesh.CreateBox("border1", 1, scene);
     border1.scaling = new BABYLON.Vector3(1, 100, 200);
     border1.position.x = 100.0;
     border1.checkCollisions = true;
     border1.isVisible = false;
 
-    var border2 = BABYLON.Mesh.CreateBox("border2", 1, scene);
+    let border2 = BABYLON.Mesh.CreateBox("border2", 1, scene);
     border2.scaling = new BABYLON.Vector3(200, 100, 1);
     border2.position.z = 100.0;
     border2.checkCollisions = true;
     border2.isVisible = false;
 
-    var border3 = BABYLON.Mesh.CreateBox("border3", 1, scene);
+    let border3 = BABYLON.Mesh.CreateBox("border3", 1, scene);
     border3.scaling = new BABYLON.Vector3(200, 100, 1);
     border3.position.z = -100.0;
     border3.checkCollisions = true;
@@ -859,8 +814,8 @@ Dungeon.prototype.initPlayAreaBounds = function (scene) {
 
 Dungeon.prototype.initSkybox = function (scene) {
     // Skybox
-    var skybox = BABYLON.Mesh.CreateBox("skyBox", 300.0, scene);
-    var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    let skybox = BABYLON.Mesh.CreateBox("skyBox", 300.0, scene);
+    let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("assets/skybox", scene);
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
@@ -900,15 +855,15 @@ Dungeon.prototype.initControls = function (scene, camera, canvas) {
         /*        if (this.jumping !== true) {
                     this.jumping = true;
                     camera.animations = [];
-                    var a = new BABYLON.Animation("a", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    let a = new BABYLON.Animation("a", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         
                     // Animation keys
-                    var keys = [];
+                    let keys = [];
                     keys.push({frame: 0, value: camera.position.y});
                     keys.push({frame: 20, value: camera.position.y + 60});
                     a.setKeys(keys);
         
-                    var easingFunction = new BABYLON.CircleEase();
+                    let easingFunction = new BABYLON.CircleEase();
                     easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
                     a.setEasingFunction(easingFunction);
         
@@ -970,7 +925,7 @@ Dungeon.prototype.initControls = function (scene, camera, canvas) {
 }
 
 function pointerLockChange() {
-    var controlEnabled = document.mozPointerLockElement || document.webkitPointerLockElement || document.msPointerLockElement || document.pointerLockElement || null;
+    let controlEnabled = document.mozPointerLockElement || document.webkitPointerLockElement || document.msPointerLockElement || document.pointerLockElement || null;
 
     // If the user is already locked
     if (!controlEnabled) {
@@ -986,8 +941,7 @@ function pointerLockChange() {
 }
 
 function onPointerDown(evt) {
-
-    var canvas = this.engine.getRenderingCanvas();
+    let canvas = this.engine.getRenderingCanvas();
     console.log("last frame pointerlock ts:" + this.lastPointerUnlockTS);
     //true/false check if we're locked, faster than checking pointerlock on each single click.
     if (!isLocked) {
@@ -1008,7 +962,8 @@ function onPointerDown(evt) {
             }
         }
     }
-
+    // trigger sword swing
+    this.enableswing = true;
     //continue with shooting requests or whatever :P
     console.log(evt);
     //if (evt === 0) {castRay()}; //(left mouse click)
@@ -1105,26 +1060,26 @@ Dungeon.prototype.initLights = function () {
         l.dispose(); // get rid of existing lights
     });
 
-    var randomNumber = function (min, max) {
+    let randomNumber = function (min, max) {
         if (min === max) {
             return (min);
         }
-        var random = Math.random();
+        let random = Math.random();
         return ((random * (max - min)) + min);
     };
 
     this.scene.ambientColor = new BABYLON.Color3(1, 1, 1); // set ambient light color/brightness
 
     // Hemispheric light to light the scene
-    var h = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), this.scene);
+    let h = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), this.scene);
     h.intensity = 0.2;
     //    h.specular = new BABYLON.Color3.Black() // tried this from https://forum.babylonjs.com/t/how-to-make-a-not-glossy-material/19286
     /*
-        var torch1 = this.scene.getMeshByName("torch");
-        var torch2 = this.scene.getMeshByName("torch01");
+        let torch1 = this.scene.getMeshByName("torch");
+        let torch2 = this.scene.getMeshByName("torch01");
     
-        var pl1 = new BABYLON.PointLight("pl1", torch1.position, this.scene);
-        var pl2 = new BABYLON.PointLight("pl2", torch2.position, this.scene);
+        let pl1 = new BABYLON.PointLight("pl1", torch1.position, this.scene);
+        let pl2 = new BABYLON.PointLight("pl2", torch2.position, this.scene);
         pl1.intensity = pl2.intensity = 0.5;
         pl1.diffuse = pl2.diffuse = BABYLON.Color3.FromInts(255, 123, 63);
         pl1.range = pl2.range = 30;
@@ -1132,8 +1087,8 @@ Dungeon.prototype.initLights = function () {
         //    pl1.specular = new BABYLON.Color3.Black()
         //    pl2.specular = new BABYLON.Color3.Black()
     
-        var positive = true;
-        var di = randomNumber(0, 0.05);
+        let positive = true;
+        let di = randomNumber(0, 0.05);
         setInterval(function () {
             if (positive) {
                 di *= -1;
@@ -1149,13 +1104,13 @@ Dungeon.prototype.initLights = function () {
 
 /*
 Dungeon.prototype.initTorches = function () {
-    var particleSystem = new BABYLON.ParticleSystem("particles", 2000, this.scene);
+    let particleSystem = new BABYLON.ParticleSystem("particles", 2000, this.scene);
 
     //Texture of each particle
     particleSystem.particleTexture = new BABYLON.Texture("particles/flame.png", this.scene);
 
-    var torch1 = this.scene.getMeshByName("torch");
-    var torch2 = this.scene.getMeshByName("torch01");
+    let torch1 = this.scene.getMeshByName("torch");
+    let torch2 = this.scene.getMeshByName("torch01");
 
     particleSystem.emitter = torch1;
     particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
@@ -1168,7 +1123,7 @@ Dungeon.prototype.initTorches = function () {
     particleSystem.emitRate = 75;
     particleSystem.start();
 
-    var ps2 = particleSystem.clone();
+    let ps2 = particleSystem.clone();
     ps2.emitter = torch2;
     ps2.start();
 };
@@ -1182,9 +1137,9 @@ Dungeon.prototype.initShadows = function () {
         }
     });
 
-    var dl = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0, -0.5, -0.3), this.scene);
+    let dl = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0, -0.5, -0.3), this.scene);
     dl.intensity = 0.5;
-    var generator = new BABYLON.ShadowGenerator(512, dl);
+    let generator = new BABYLON.ShadowGenerator(512, dl);
 
     this.scene.meshes.forEach(function (mesh) {
         if (mesh.name.indexOf("shadow") != -1) {
@@ -1200,7 +1155,7 @@ Dungeon.prototype.initCollisions = function () {
     this.scene.gravity = new BABYLON.Vector3(0, -.5, 0); //-9.81, 0);
     this.scene.collisionsEnabled = true;
 
-    var cam = this.scene.activeCamera;
+    let cam = this.scene.activeCamera;
     cam.applyGravity = true;
     cam.ellipsoid = new BABYLON.Vector3(2.55, 2, 2.55); // the player size -- https://doc.babylonjs.com/divingDeeper/cameras/camera_collisions
     cam.checkCollisions = true;
@@ -1217,12 +1172,12 @@ Dungeon.prototype.initCollisions = function () {
 Dungeon.prototype.initFx = function (camera) {
 
     // STEPS
-    var step1 = new BABYLON.Sound("step1", "assets/sounds/step1.wav", this.scene);
-    var step2 = new BABYLON.Sound("step2", "assets/sounds/step2.wav", this.scene);
-    var step3 = new BABYLON.Sound("step3", "assets/sounds/step3.wav", this.scene);
+    let step1 = new BABYLON.Sound("step1", "assets/sounds/step1.wav", this.scene);
+    let step2 = new BABYLON.Sound("step2", "assets/sounds/step2.wav", this.scene);
+    let step3 = new BABYLON.Sound("step3", "assets/sounds/step3.wav", this.scene);
 
-    var goToStep2 = false;
-    var walking = false;
+    let goToStep2 = false;
+    let walking = false;
 
     step1.onended = function () {
         goToStep2 = true;
@@ -1405,13 +1360,13 @@ Dungeon.prototype.initFx = function (camera) {
     });
     /*
         // FIRE sound, centered around the two torches
-        var fire = new BABYLON.Sound("fire", "assets/sounds/fire1.wav", this.scene,
+        let fire = new BABYLON.Sound("fire", "assets/sounds/fire1.wav", this.scene,
             null, { loop: true, autoplay: true, spatialSound: true, maxDistance: 20, volume: 0.2 });
-        var fire2 = new BABYLON.Sound("fire2", "assets/sounds/fire2.wav", this.scene,
+        let fire2 = new BABYLON.Sound("fire2", "assets/sounds/fire2.wav", this.scene,
             null, { loop: true, autoplay: true, spatialSound: true, maxDistance: 20, volume: 0.2 });
     
-        var torch1 = this.scene.getMeshByName("torch");
-        var torch2 = this.scene.getMeshByName("torch01");
+        let torch1 = this.scene.getMeshByName("torch");
+        let torch2 = this.scene.getMeshByName("torch01");
         fire.setPosition(torch1.position);
         fire2.setPosition(torch2.position);
         */
