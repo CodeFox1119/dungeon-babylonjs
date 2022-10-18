@@ -15,7 +15,7 @@ MeshAndActorManager.prototype.createNewClone = function (actorPosition, meshFile
     newClone.rootNodes[0].position = new BABYLON.Vector3(actorPosition.x, 9.1, actorPosition.z);
     newClone.rootNodes[0].ellipsoid = new BABYLON.Vector3(2, 1, 2); // the character size for collisions -- https://doc.babylonjs.com/divingDeeper/cameras/camera_collisions
     newClone.rootNodes[0].checkCollisions = true;
-
+  
     this.actorsAvailableOnLevel++;
     this.totalAgentsSoFar.push(newClone);
 }
@@ -46,10 +46,6 @@ MeshAndActorManager.prototype.addActor = async function (actorPosition, meshFile
     var root = container.meshes[0];
     root.name = '__' + meshFilename + '__';
     root.id = '__' + meshFilename + '__';
-
-    const box = BABYLON.MeshBuilder.CreateBox("box", {});
-    box.position = actorPosition;
-   
     for (let i = 0; i < container.meshes.length; i++) {
         if (i == 0) {
             container.meshes[i].position = new BABYLON.Vector3(actorPosition.x, 1.1, actorPosition.z);
@@ -66,6 +62,7 @@ MeshAndActorManager.prototype.addActor = async function (actorPosition, meshFile
         if (i != 0) { // don't need collisions on root.. ideally want to place on the biggest mesh
             container.meshes[i].ellipsoid = new BABYLON.Vector3(2, 1, 2); // the character size for collisions -- https://doc.babylonjs.com/divingDeeper/cameras/camera_collisions
             container.meshes[i].checkCollisions = true;
+            container.meshes[i].showBoundingBox = true;
         }
     }
     _this.meshCache[meshFilename] = container;

@@ -31,12 +31,12 @@ let Dungeon = function (canvas) {
     // console.log(utils.isTouchEnabled() || utils.getWindowWidth() < 768);
     // this.prepNavmeshCreator(); // prepare navmesh creator by loading recast wasm
 
-    
+
     this.TAU = 2 * Math.PI;
     this.PI = Math.PI;
     this.PI0125 = Math.PI / 8;
     this.PI06125 = Math.PI / 16;
-    
+
     const camera = this.createCamera();
     // limit camera rotation in up/down directions
     camera.onAfterCheckInputsObservable.add(() => {
@@ -62,7 +62,14 @@ let Dungeon = function (canvas) {
     _this.meshAndActorManager = new MeshAndActorManager();
     _this.meshAndActorManager.initNewLevel();
     _this.actorsOnCurrentLevel = ["deathknight", "deathknight", "deathknight"]
-
+    this.scene.onBeforeRenderObservable.add(() => {
+        if (this.enemyAgents[0] && this.sword) {
+            if (this.sword.intersectsMesh(this.enemyAgents[0].mesh) || this.sword.intersectsMesh(this.enemyAgents[1].mesh) || this.sword.intersectsMesh(this.enemyAgents[2].mesh)) {
+                console.log('Collisions...')
+            } else {
+            }
+        }
+    })
     this.scene.executeWhenReady(async function () {
         _this.engine.loadingScreen.hideLoadingUI();
         _this.importSword(_this.scene, camera);
@@ -270,6 +277,11 @@ Dungeon.prototype.update = function (_this) {
                 }
             }
             if (ag) {
+                if (this.sword.intersectsMesh(ag.mesh, false)) {
+                    console.log('Collision-----------')
+                } else {
+                    // console.log('No Collision.....')
+                }
                 let a = camera.position.x - ag.mesh.position.x;
                 let b = camera.position.z - ag.mesh.position.z;
                 let distance = Math.sqrt(a * a + b * b);
@@ -378,17 +390,16 @@ Dungeon.prototype.update = function (_this) {
 
         }
     }
-
     _this.scene.render();
     if (_this.fpsText) {
         _this.fpsText.text = "Meshes: " + _this.scene.meshes.length + "; " + _this.engine.getFps().toFixed() + " fps";
     }
     if (this.enableswing) {
         if (this.sword.position._x > -3) {
-            this.sword.movePOV(.5, 0, 0)
+            // this.sword.movePOV(.5, 0, 0)
         } else {
             this.enableswing = false;
-            this.sword.position = new BABYLON.Vector3(4, -2.5, 5);
+            // this.sword.position = new BABYLON.Vector3(4, -2.5, 5);
         }
     }
 }
@@ -407,17 +418,36 @@ Dungeon.prototype.importSword = function (scene, camera) {
     camera.fov = 1;
     //    transformNode.position = new BABYLON.Vector3(0.5, -0.7, 0.5);
     //    transformNode.rotation.x = -0.01;
+    var matPlan = new BABYLON.StandardMaterial("matPlan1", scene);
+    matPlan.backFaceCulling = false;
+    matPlan.emissiveColor = new BABYLON.Color3(0.2, 1, 0.2);
 
+    this.plan = BABYLON.Mesh.CreatePlane("plane", 20, scene);
+    this.plan.position = new BABYLON.Vector3(13, 0, 0);
+    this.plan.rotation.x = -Math.PI / 4;
+    this.plan.material = matPlan;
+    this.plan.showBoundingBox = true;
     BABYLON.SceneLoader.ImportMeshAsync("", "assets/", "longsword.glb", scene,).then(results => {
+        results.meshes.forEach(mesh => {
+            mesh.checkCollisions = true;
+        })
         let root = results.meshes[0];
         root.name = '__sword__';
         root.id = '__sword__';
-        root.position = new BABYLON.Vector3(3, -2.5, 5);
-        root.rotation = new BABYLON.Vector3(1, 1, 1);
-        root.scaling.scaleInPlace(.8);
-        root.isPickable = false;
+        root.setParent(null);
+        root.ellipsoid = new BABYLON.Vector3(.5, .5, .5);
+        root.position = new BABYLON.Vector3(1, -1, 3);
+        // root.position = new BABYLON.Vector3(.5, -1, 3);
+        // root.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(25), BABYLON.Tools.ToRadians(180), 0);
+        // root.position = new BABYLON.Vector3(3, -2.5, 5);
+        // root.rotation = new BABYLON.Vector3(1, 1, 1);
+        root.scaling.scaleInPlace(1);
+        // root.scaling.scaleInPlace(.5);
+        root.isPickable = true;
+        root.checkCollisions = true;//check for collisions
         root.parent = transformNode;
         this.sword = root;
+
     });
     BABYLON.NodeMaterial.ParseFromSnippetAsync("8HENV8#7", this.scene).then((mat) => {
         this.armyHealthBar1 = BABYLON.MeshBuilder.CreatePlane("armyHealthBar1", { width: 1.5, height: 0.1, sideOrientation: BABYLON.Mesh.DOUBLESIDE });
@@ -1132,6 +1162,7 @@ Dungeon.prototype.initTorches = function () {
 Dungeon.prototype.initShadows = function () {
 
     this.scene.meshes.forEach(function (mesh) {
+        mesh.checkCollisions = true;
         if (mesh.name.indexOf("floor") != -1) {
             mesh.receiveShadows = true;
         }
@@ -1266,6 +1297,13 @@ Dungeon.prototype.initFx = function (camera) {
     this.scene.registerBeforeRender(function () {
         updateHit();
         camShake();
+        if (this.sword) {
+            if (this.sword.intersectsMesh(this.enemyAgents[0].mesh, false) || this.sword.intersectsMesh(this.enemyAgents[1].mesh, false) || this.sword.intersectsMesh(this.enemyAgents[2].mesh, false)) {
+                console.log('Collision-----------')
+            } else {
+                console.log('No Collision.....')
+            }
+        }
 
         let delta = Date.now() - lastUpdate;
         lastUpdate = Date.now();
