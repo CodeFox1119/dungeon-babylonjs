@@ -11,11 +11,11 @@ MeshAndActorManager.prototype.initNewLevel = function () {
 }
 
 MeshAndActorManager.prototype.createNewClone = function (actorPosition, meshFilename, scene) {
+    console.log('CreateNewClone...')
     let newClone = this.meshCache[meshFilename].instantiateModelsToScene(undefined, false, { doNotInstantiate: true });
     newClone.rootNodes[0].position = new BABYLON.Vector3(actorPosition.x, 9.1, actorPosition.z);
     newClone.rootNodes[0].ellipsoid = new BABYLON.Vector3(2, 1, 2); // the character size for collisions -- https://doc.babylonjs.com/divingDeeper/cameras/camera_collisions
     newClone.rootNodes[0].checkCollisions = true;
-  
     this.actorsAvailableOnLevel++;
     this.totalAgentsSoFar.push(newClone);
 }
@@ -32,9 +32,8 @@ MeshAndActorManager.prototype.addActor = async function (actorPosition, meshFile
     let container = await BABYLON.SceneLoader.LoadAssetContainerAsync("assets/meshes/", meshFilename + ".glb",
         scene);
 
-        // enable animation blending
+    // enable animation blending
     // https://forum.babylonjs.com/t/animationgroups-blending-only-for-imported-gltf/5029/3
-    console.log('container.animationGroups:', container.animationGroups)
     for (let i = 0; i < container.animationGroups.length; i++) {
         for (var index = 0; index < container.animationGroups[i].targetedAnimations.length; index++) {
             var animation = container.animationGroups[i].targetedAnimations[index].animation;
@@ -46,11 +45,13 @@ MeshAndActorManager.prototype.addActor = async function (actorPosition, meshFile
     var root = container.meshes[0];
     root.name = '__' + meshFilename + '__';
     root.id = '__' + meshFilename + '__';
+    root.checkCollisions = true;
     for (let i = 0; i < container.meshes.length; i++) {
         if (i == 0) {
             container.meshes[i].position = new BABYLON.Vector3(actorPosition.x, 1.1, actorPosition.z);
             container.meshes[i].rotation = new BABYLON.Vector3(Math.PI / 4, 0, 0); //BABYLON.Tools.ToRadians(-90), 0, 0);
             container.meshes[i].scaling = new BABYLON.Vector3(.17, .17, .17);
+
         }
         else {
             // don't set position of nodes below root node, as messes up the nav mesh positioning
@@ -60,11 +61,12 @@ MeshAndActorManager.prototype.addActor = async function (actorPosition, meshFile
         }
         // need to set, so player can't collide with clones
         if (i != 0) { // don't need collisions on root.. ideally want to place on the biggest mesh
-            container.meshes[i].ellipsoid = new BABYLON.Vector3(2, 1, 2); // the character size for collisions -- https://doc.babylonjs.com/divingDeeper/cameras/camera_collisions
+            // container.meshes[i].ellipsoid = new BABYLON.Vector3(2, 1, 2); // the character size for collisions -- https://doc.babylonjs.com/divingDeeper/cameras/camera_collisions
             container.meshes[i].checkCollisions = true;
-            container.meshes[i].showBoundingBox = true;
+            // container.meshes[i].showBoundingBox = true;
         }
     }
+
     _this.meshCache[meshFilename] = container;
     _this.createNewClone(actorPosition, meshFilename, scene);
 }
